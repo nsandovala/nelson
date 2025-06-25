@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>HEO</title>
+</head>
+<body>
+    <h1>{{ message }}</h1>
+    <form method="post">
+        <input type="text" name="feeling" placeholder="Escribe cómo te sientes" required>
+        <button type="submit">Enviar</button>
+    </form>
+    {% if response %}
+    <p>{{ response }}</p>
+    {% endif %}
+</body>
+</html>
