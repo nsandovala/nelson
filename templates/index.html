@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>HEO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Hola, soy HEO. ¿Cómo te sientes hoy?</h1>
+    <form method="post">
+        <input type="text" name="feeling" placeholder="Escribe aquí" required>
+        <button type="submit">Enviar</button>
+    </form>
+    {% if response %}
+    <p>{{ response }}</p>
+    {% endif %}
+</body>
+</html>
