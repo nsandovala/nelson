@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Códex Learning Loop™ — Jarvis Sentinel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050608;
+      --panel: rgba(12, 15, 20, 0.92);
+      --accent: #40ffb7;
+      --accent-strong: #24d6ff;
+      --accent-soft: rgba(64, 255, 183, 0.18);
+      --purple: #7a5cff;
+      --text-main: #e7fdf5;
+      --text-muted: #8aa4a3;
+      --grid-line: rgba(64, 255, 183, 0.08);
+      --glow: 0 0 18px rgba(36, 214, 255, 0.65);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(36, 214, 255, 0.08), transparent 55%),
+                  radial-gradient(circle at 80% 10%, rgba(122, 92, 255, 0.12), transparent 60%),
+                  var(--bg);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 64px 24px 120px;
+    }
+
+    .board {
+      position: relative;
+      max-width: 1200px;
+      width: 100%;
+      background: linear-gradient(135deg, rgba(6, 10, 16, 0.95), rgba(6, 16, 20, 0.85));
+      border: 1px solid rgba(64, 255, 183, 0.35);
+      border-radius: 28px;
+      padding: 72px 64px 96px;
+      box-shadow: 0 25px 60px rgba(5, 20, 20, 0.55);
+      overflow: hidden;
+    }
+
+    .board::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask: linear-gradient(180deg, rgba(0,0,0,0.85) 50%, transparent 120%);
+      pointer-events: none;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      letter-spacing: 0.28rem;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 0 22px rgba(64, 255, 183, 0.65);
+      margin: 0;
+    }
+
+    header p {
+      margin: 16px auto 0;
+      max-width: 640px;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+    }
+
+    .loop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 32px;
+      position: relative;
+    }
+
+    .module {
+      position: relative;
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 28px 28px 32px;
+      border: 1px solid rgba(64, 255, 183, 0.32);
+      box-shadow: 0 0 0 1px rgba(36, 214, 255, 0.18), 0 20px 45px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .module::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(36, 214, 255, 0.18), rgba(122, 92, 255, 0.08));
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid rgba(64, 255, 183, 0.45);
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle, rgba(64, 255, 183, 0.35), rgba(6, 12, 18, 0.1));
+      color: var(--accent);
+      font-size: 1.4rem;
+      text-shadow: var(--glow);
+    }
+
+    .module h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.18rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .module h3 {
+      font-size: 1rem;
+      color: var(--accent);
+      margin-top: 0;
+      letter-spacing: 0.08em;
+    }
+
+    .module p,
+    .module li {
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+
+    .spark {
+      grid-column: span 2;
+      background: linear-gradient(125deg, rgba(64, 255, 183, 0.25), rgba(122, 92, 255, 0.12));
+    }
+
+    .spark .spark-visual {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .spark-visual .spark-text {
+      flex: 1 1 280px;
+    }
+
+    .spark-visual .spark-icon {
+      flex: 0 0 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 1px solid rgba(122, 92, 255, 0.65);
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle, rgba(122, 92, 255, 0.22), rgba(6, 10, 16, 0.35));
+      box-shadow: 0 0 28px rgba(122, 92, 255, 0.55);
+      color: var(--accent);
+      font-size: 3rem;
+      text-shadow: 0 0 18px rgba(64, 255, 183, 0.65);
+    }
+
+    .why-list {
+      display: grid;
+      gap: 12px;
+      padding-left: 0;
+      list-style: none;
+      counter-reset: why;
+    }
+
+    .why-list li {
+      position: relative;
+      padding: 16px 16px 16px 72px;
+      border-left: 2px dashed rgba(64, 255, 183, 0.3);
+      border-radius: 14px;
+      background: rgba(6, 12, 18, 0.68);
+      backdrop-filter: blur(6px);
+    }
+
+    .why-list li::before {
+      counter-increment: why;
+      content: "¿Por qué " counter(why) "?";
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+    }
+
+    .validation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .validation-card {
+      background: rgba(7, 20, 24, 0.75);
+      border: 1px solid rgba(36, 214, 255, 0.25);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .validation-card span {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .validation-card strong {
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    .chip-diagram {
+      margin-top: 22px;
+      padding: 16px;
+      border: 1px dashed rgba(64, 255, 183, 0.3);
+      border-radius: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .chip-diagram span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .chip-diagram span::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 0 12px rgba(64, 255, 183, 0.55);
+    }
+
+    .action-metrics {
+      display: grid;
+      gap: 16px;
+    }
+
+    .metric {
+      background: rgba(6, 16, 20, 0.75);
+      border: 1px solid rgba(64, 255, 183, 0.28);
+      border-radius: 14px;
+      padding: 14px 16px 18px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      position: relative;
+      height: 12px;
+      border-radius: 8px;
+      background: rgba(64, 255, 183, 0.12);
+      overflow: hidden;
+    }
+
+    .progress-bar span {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(64, 255, 183, 0.2), rgba(36, 214, 255, 0.85));
+      box-shadow: 0 0 16px rgba(36, 214, 255, 0.45);
+    }
+
+    .reflection-notes {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .reflection-notes p {
+      padding: 14px 16px;
+      background: rgba(7, 12, 16, 0.78);
+      border: 1px dashed rgba(122, 92, 255, 0.45);
+      border-radius: 12px;
+    }
+
+    .connector {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      border: 1px solid rgba(36, 214, 255, 0.25);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .connector.one {
+      top: 160px;
+      left: calc(50% - 80px);
+      border-color: rgba(64, 255, 183, 0.45);
+      box-shadow: 0 0 18px rgba(64, 255, 183, 0.4);
+    }
+
+    .connector.two {
+      bottom: 140px;
+      right: 12%;
+      border-color: rgba(122, 92, 255, 0.45);
+    }
+
+    .connector::after {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg);
+      box-shadow: var(--glow);
+    }
+
+    .loop-bridge {
+      position: absolute;
+      inset: 120px 42% auto 42%;
+      border-top: 1px dashed rgba(64, 255, 183, 0.35);
+      height: 0;
+    }
+
+    .loop-bridge::after {
+      content: "↻";
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--accent);
+      font-size: 1.2rem;
+      text-shadow: var(--glow);
+    }
+
+    .addons {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 220px;
+      display: grid;
+      gap: 16px;
+      z-index: 2;
+    }
+
+    .addon-card {
+      background: rgba(8, 16, 18, 0.85);
+      border: 1px solid rgba(36, 214, 255, 0.32);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 0 18px rgba(36, 214, 255, 0.25);
+    }
+
+    .addon-card h4 {
+      margin: 0 0 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      color: var(--accent-strong);
+      text-transform: uppercase;
+    }
+
+    .addon-card ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    footer {
+      margin-top: 64px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    footer span {
+      color: var(--accent);
+    }
+
+    @media (max-width: 1024px) {
+      .spark {
+        grid-column: span 1;
+      }
+
+      .addons {
+        position: static;
+        width: 100%;
+        margin-bottom: 24px;
+      }
+
+      .board {
+        padding: 56px 28px 88px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 48px 16px 96px;
+      }
+
+      .module {
+        padding: 24px;
+      }
+
+      .spark-visual .spark-icon {
+        flex: 1 1 120px;
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <div class="addons">
+      <div class="addon-card">
+        <h4>Radar Creativo AMON</h4>
+        <ul>
+          <li>Idea Flash: Micro-píldoras Jarvis para líderes.</li>
+          <li>Insight HEO: Mapear emociones antes del pitch.</li>
+          <li>Experimento Neural: prompts biónicos + feedback humano.</li>
+        </ul>
+      </div>
+      <div class="addon-card">
+        <h4>Código del Dinero</h4>
+        <p><strong>Valor ↔ Confianza ↔ Conversión</strong><br> Prototipa una oferta, valida ROI perceptible, refuerza confianza con evidencia.</p>
+      </div>
+    </div>
+
+    <header>
+      <h1>CÓDEX LEARNING LOOP™ — Aprende. Analiza. Aplica. Evoluciona.</h1>
+      <p>Un circuito cognitivo diseñado para transformar chispas de inspiración en decisiones con propósito dentro del ecosistema Jarvis Sentinel / AMON 360.</p>
+    </header>
+
+    <span class="loop-bridge"></span>
+    <span class="connector one"></span>
+    <span class="connector two"></span>
+
+    <section class="loop-grid">
+      <article class="module spark">
+        <div class="module-header">
+          <div class="icon">⚡</div>
+          <div>
+            <h2>Inicio del Bucle — “La Chispa”</h2>
+            <h3>Explora el detonante</h3>
+          </div>
+        </div>
+        <div class="spark-visual">
+          <div class="spark-text">
+            <p><em>Toda idea nace de una pregunta que desafía lo común.</em> Define el reto que despierta la curiosidad estratégica.</p>
+            <ul>
+              <li>Pregunta detonante: ¿Cómo activar neuroventa ética en el onboarding de AMON 360?</li>
+              <li>Indicadores iniciales: fricción emocional, baja conversión, desconexión propósito-impacto.</li>
+            </ul>
+          </div>
+          <div class="spark-icon">🧠</div>
+        </div>
+      </article>
+
+      <article class="module">
+        <div class="module-header">
+          <div class="icon">🌀</div>
+          <div>
+            <h2>Descomposición — Los 5 Porqués</h2>
+            <h3>Profundiza hasta la raíz</h3>
+          </div>
+        </div>
+        <p>Secuencia espiral que revela causa y emoción detrás del síntoma inicial. Integra pensamiento crítico con HEO y TBB.</p>
+        <ol class="why-list">
+          <li>Porque los nuevos líderes no perciben el valor práctico en la primera semana (TBB).</li>
+          <li>Porque el guion inicial enfoca características y no micro-resultados experimentables.</li>
+          <li>Porque no existe un mapa de emociones (HEO) vinculado a los hitos del onboarding.</li>
+          <li>Porque la automatización IA no recibe retroalimentación empática para ajustar el tono.</li>
+          <li>Porque el loop de aprendizaje no registra insights neuroventas para iterar el pitch.</li>
+        </ol>
+      </article>
+
+      <article class="module">
+        <div class="module-header">
+          <div class="icon">🔗</div>
+          <div>
+            <h2>Conexión y Validación</h2>
+            <h3>Comprueba con lógica y evidencia</h3>
+          </div>
+        </div>
+        <p>Alinea causa ↔ efecto ↔ acción con datos y experimentación controlada.</p>
+        <div class="validation-grid">
+          <div class="validation-card">
+            <span>Causa</span>
+            <strong>Mensaje poco empático</strong>
+            <p>Datos HEO muestran emoción “ansiedad” en 62% de usuarios.</p>
+          </div>
+          <div class="validation-card">
+            <span>Efecto</span>
+            <strong>Abandono temprano</strong>
+            <p>Drop 28% en la jornada 3 del onboarding.</p>
+          </div>
+          <div class="validation-card">
+            <span>Acción</span>
+            <strong>Iterar script adaptativo</strong>
+            <p>Inserta micro-testimonios + preguntas espejo.</p>
+          </div>
+        </div>
+        <div class="chip-diagram">
+          <span>Valida hipótesis con experimento A/B + trazabilidad científica</span>
+          <span>Conecta IA emocional ↔ dashboards Jarvis Sentinel</span>
+          <span>Refuerza decisión con lógica comprobable y métrica de impacto</span>
+        </div>
+      </article>
+
+      <article class="module">
+        <div class="module-header">
+          <div class="icon">🚀</div>
+          <div>
+            <h2>Aplicación — El Bucle en Acción</h2>
+            <h3>Experimenta y optimiza</h3>
+          </div>
+        </div>
+        <p>La idea cobra valor cuando respira en el mundo real. Documenta MVP, campañas y decisiones.</p>
+        <div class="action-metrics">
+          <div class="metric">
+            <strong>MVP Neuroventa Ética</strong>
+            <p>Experimento: secuencia Jarvis con storytelling 3 capas + respuestas empáticas IA.</p>
+            <div class="progress-bar"><span style="width: 68%;"></span></div>
+            <small>Efectividad actual: 68% conversión a sesión estratégica.</small>
+          </div>
+          <div class="metric">
+            <strong>Campaña Sentinela</strong>
+            <p>Iteración semanal con feedback humano + ajuste automático de tono.</p>
+            <div class="progress-bar"><span style="width: 54%; background: linear-gradient(90deg, rgba(122,92,255,0.4), rgba(64,255,183,0.8));"></span></div>
+            <small>Adopción de mejoras: 54% equipos activos.</small>
+          </div>
+          <div class="metric">
+            <strong>Decisión con Propósito</strong>
+            <p>Definir ritual de revisión quincenal Jarvis Insights + matriz de impacto.</p>
+            <div class="progress-bar"><span style="width: 82%;"></span></div>
+            <small>Coherencia propósito-resultado: 82%.</small>
+          </div>
+        </div>
+      </article>
+
+      <article class="module">
+        <div class="module-header">
+          <div class="icon">♻️</div>
+          <div>
+            <h2>Reflexión y Mejora Continua</h2>
+            <h3>Cierra el ciclo, reinicia la chispa</h3>
+          </div>
+        </div>
+        <p>Haz visible lo aprendido, lo que se optimiza y lo que vuelve al inicio del loop.</p>
+        <div class="reflection-notes">
+          <p><strong>Insight Jarvis:</strong> Las emociones marcadas como “logro” correlacionan con la adopción del módulo IA emocional.</p>
+          <p><strong>Acción Correctiva:</strong> Incluir cápsulas “cómo se siente el éxito” en los checkpoints.</p>
+          <p><strong>Próximo Ciclo:</strong> Integrar aprendizaje en la nueva pregunta detonante sobre liderazgo adaptativo.</p>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <footer>
+    <p><span>“El conocimiento que no se aplica, se pudre. El que se comparte, se multiplica.”</span></p>
+  </footer>
+</body>
+</html>
