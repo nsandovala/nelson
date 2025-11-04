@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TBB Sales Monitor – Codex View</title>
+    <style>
+        :root {
+            --bg-dark: rgba(10, 14, 12, 0.85);
+            --accent: #00ff88;
+            --accent-soft: rgba(0, 255, 136, 0.2);
+            --card-bg: rgba(20, 30, 25, 0.55);
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --blur: blur(18px);
+            --radius: 28px;
+            --shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", "Segoe UI", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at top left, rgba(0, 255, 136, 0.12), transparent 55%),
+                        radial-gradient(circle at bottom right, rgba(0, 255, 136, 0.08), transparent 45%),
+                        #040806;
+            color: #ffffff;
+            padding: 24px;
+        }
+
+        .dashboard {
+            width: min(980px, 100%);
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: var(--blur);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            padding: 38px 42px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard::before {
+            content: "";
+            position: absolute;
+            top: -120px;
+            right: -120px;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.35), transparent 70%);
+            filter: blur(18px);
+            opacity: 0.6;
+            animation: pulseGlow 6s ease-in-out infinite;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 3vw, 2.4rem);
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-shadow: 0 0 18px rgba(0, 255, 136, 0.45);
+            animation: glowText 4s ease-in-out infinite;
+        }
+
+        .status-badge {
+            padding: 8px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 136, 0.35);
+            background: rgba(0, 255, 136, 0.08);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: rgba(10, 18, 14, 0.65);
+            border-radius: calc(var(--radius) - 10px);
+            padding: 24px;
+            border: 1px solid rgba(0, 255, 136, 0.18);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 255, 136, 0.4);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), inset 0 0 12px rgba(0, 255, 136, 0.12);
+        }
+
+        .card span.label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .card strong {
+            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .card small {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.85rem;
+        }
+
+        .chart-wrapper {
+            background: rgba(10, 18, 14, 0.55);
+            border-radius: calc(var(--radius) - 8px);
+            border: 1px solid rgba(0, 255, 136, 0.12);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .bars {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .bar {
+            background: linear-gradient(180deg, rgba(0, 255, 136, 0.7) 0%, rgba(0, 255, 136, 0.15) 100%);
+            border-radius: 14px 14px 6px 6px;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+            transition: transform 0.3s ease;
+        }
+
+        .bar:hover {
+            transform: translateY(-6px);
+        }
+
+        .bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .bar span {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.65);
+            letter-spacing: 0.05em;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.05em;
+            padding-top: 8px;
+        }
+
+        @keyframes glowText {
+            0%, 100% {
+                text-shadow: 0 0 18px rgba(0, 255, 136, 0.35);
+            }
+            50% {
+                text-shadow: 0 0 28px rgba(0, 255, 136, 0.75);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+            50% {
+                opacity: 0.85;
+                transform: scale(1.05);
+            }
+        }
+
+        @media (max-width: 720px) {
+            .dashboard {
+                padding: 32px 24px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="dashboard">
+        <header>
+            <h1>TBB Sales Monitor – Codex View</h1>
+            <div class="status-badge">Operativo • Flujo óptimo</div>
+        </header>
+
+        <section class="cards">
+            <article class="card">
+                <span class="label">Ventas Hoy</span>
+                <strong>48</strong>
+                <small>Objetivo diario: 60</small>
+            </article>
+            <article class="card">
+                <span class="label">Total Semanal</span>
+                <strong>$18,420</strong>
+                <small>Actualizado a las 17:45</small>
+            </article>
+            <article class="card">
+                <span class="label">Promedio Diario</span>
+                <strong>$2,631</strong>
+                <small>Variación +6.4% vs semana previa</small>
+            </article>
+        </section>
+
+        <section class="chart-wrapper">
+            <div class="chart-header">
+                <span>Desempeño últimos 7 días</span>
+                <span>Alerta: mantener tendencia ascendente</span>
+            </div>
+            <div class="bars">
+                <div class="bar" style="height: 68px;" data-value="$2.1k">
+                    <span>Lun</span>
+                </div>
+                <div class="bar" style="height: 84px;" data-value="$2.6k">
+                    <span>Mar</span>
+                </div>
+                <div class="bar" style="height: 92px;" data-value="$2.9k">
+                    <span>Mié</span>
+                </div>
+                <div class="bar" style="height: 74px;" data-value="$2.3k">
+                    <span>Jue</span>
+                </div>
+                <div class="bar" style="height: 104px;" data-value="$3.4k">
+                    <span>Vie</span>
+                </div>
+                <div class="bar" style="height: 62px;" data-value="$1.8k">
+                    <span>Sáb</span>
+                </div>
+                <div class="bar" style="height: 76px;" data-value="$2.4k">
+                    <span>Dom</span>
+                </div>
+            </div>
+        </section>
+
+        <footer>Sistema Jarvis Sentinel v1.0 – powered by Codex Learning Loop™</footer>
+    </main>
+</body>
+</html>
